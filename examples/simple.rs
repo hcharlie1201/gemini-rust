@@ -89,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .generate_content()
             .with_system_prompt("You are a helpful weather assistant.")
             .with_user_message("What's the weather like in San Francisco right now?")
-            .with_function_response("get_weather", weather_response)
+            .with_function_response_str("get_weather", weather_response)?
             .with_generation_config(
                 GenerationConfig {
                     temperature: Some(0.7),

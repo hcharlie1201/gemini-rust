@@ -108,7 +108,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .generate_content()
                     .with_system_prompt("You are a helpful assistant that can check weather and perform calculations.")
                     .with_user_message("What's 42 times 12?")
-                    .with_function_response("calculate", function_response)
+                    .with_function_response_str("calculate", function_response)?
                     .execute()
                     .await?;
                 
@@ -131,7 +131,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .generate_content()
                     .with_system_prompt("You are a helpful assistant that can check weather and perform calculations.")
                     .with_user_message("What's 42 times 12?")
-                    .with_function_response("get_weather", weather_response)
+                    .with_function_response_str("get_weather", weather_response)?
                     .execute()
                     .await?;
                 

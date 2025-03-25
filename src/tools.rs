@@ -3,23 +3,43 @@ use std::collections::HashMap;
 
 /// Tool that can be used by the model
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tool {
-    /// The function declaration for the tool
-    pub function_declarations: Vec<FunctionDeclaration>,
+#[serde(untagged)]
+pub enum Tool {
+    /// Function-based tool
+    Function {
+        /// The function declaration for the tool
+        function_declarations: Vec<FunctionDeclaration>,
+    },
+    /// Google Search tool
+    GoogleSearch {
+        /// The Google Search configuration
+        google_search: GoogleSearchConfig,
+    },
 }
+
+/// Empty configuration for Google Search tool
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GoogleSearchConfig {}
 
 impl Tool {
     /// Create a new tool with a single function declaration
     pub fn new(function_declaration: FunctionDeclaration) -> Self {
-        Self {
+        Self::Function {
             function_declarations: vec![function_declaration],
         }
     }
 
     /// Create a new tool with multiple function declarations
     pub fn with_functions(function_declarations: Vec<FunctionDeclaration>) -> Self {
-        Self {
+        Self::Function {
             function_declarations,
+        }
+    }
+    
+    /// Create a new Google Search tool
+    pub fn google_search() -> Self {
+        Self::GoogleSearch {
+            google_search: GoogleSearchConfig {},
         }
     }
 }
