@@ -5,15 +5,14 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get API key from environment variable
-    let api_key = env::var("GEMINI_API_KEY")
-        .expect("GEMINI_API_KEY environment variable not set");
+    let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY environment variable not set");
 
     // Create client
     let client = Gemini::new(api_key);
 
     // Using response_schema for structured output
     println!("--- Structured Response Example ---");
-    
+
     // Define a JSON schema for the response
     let schema = json!({
         "type": "object",
@@ -56,20 +55,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Structured JSON Response:");
     println!("{}", response.text());
-    
+
     // Parse the JSON response
     let json_response: serde_json::Value = serde_json::from_str(&response.text())?;
-    
+
     println!("\nAccessing specific fields:");
     println!("Language: {}", json_response["name"]);
     println!("Created in: {}", json_response["year_created"]);
     println!("Created by: {}", json_response["creator"]);
     println!("Popularity: {}/10", json_response["popularity_score"]);
-    
+
     println!("\nKey Features:");
     if let Some(features) = json_response["key_features"].as_array() {
         for (i, feature) in features.iter().enumerate() {
-            println!("{}. {}", i+1, feature);
+            println!("{}. {}", i + 1, feature);
         }
     }
 

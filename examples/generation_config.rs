@@ -4,8 +4,7 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get API key from environment variable
-    let api_key = env::var("GEMINI_API_KEY")
-        .expect("GEMINI_API_KEY environment variable not set");
+    let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY environment variable not set");
 
     // Create client
     let client = Gemini::new(api_key);
@@ -16,22 +15,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .generate_content()
         .with_system_prompt("You are a helpful assistant.")
         .with_user_message("Write a short poem about Rust programming language.")
-        .with_generation_config(
-            GenerationConfig {
-                temperature: Some(0.9),
-                top_p: Some(0.8),
-                top_k: Some(20),
-                max_output_tokens: Some(200),
-                candidate_count: Some(1),
-                stop_sequences: Some(vec!["END".to_string()]),
-                response_mime_type: None,
-                response_schema: None,
-            }
-        )
+        .with_generation_config(GenerationConfig {
+            temperature: Some(0.9),
+            top_p: Some(0.8),
+            top_k: Some(20),
+            max_output_tokens: Some(200),
+            candidate_count: Some(1),
+            stop_sequences: Some(vec!["END".to_string()]),
+            response_mime_type: None,
+            response_schema: None,
+        })
         .execute()
         .await?;
 
-    println!("Response with high temperature (0.9):\n{}\n", response1.text());
+    println!(
+        "Response with high temperature (0.9):\n{}\n",
+        response1.text()
+    );
 
     // Using individual generation parameters
     println!("--- Using individual generation parameters ---");
@@ -44,7 +44,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute()
         .await?;
 
-    println!("Response with low temperature (0.2):\n{}\n", response2.text());
+    println!(
+        "Response with low temperature (0.2):\n{}\n",
+        response2.text()
+    );
 
     // Setting multiple parameters individually
     println!("--- Setting multiple parameters individually ---");
@@ -59,7 +62,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute()
         .await?;
 
-    println!("Response with custom parameters and stop sequence:\n{}", response3.text());
+    println!(
+        "Response with custom parameters and stop sequence:\n{}",
+        response3.text()
+    );
 
     Ok(())
 }

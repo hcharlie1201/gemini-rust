@@ -52,7 +52,7 @@ use tokio;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let api_key = std::env::var("GOOGLE_API_KEY")?;
+    let api_key = std::env::var("GEMINI_API_KEY")?;
     let client = Gemini::new(&api_key);
     
     // Create a Google Search tool

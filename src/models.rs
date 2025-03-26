@@ -8,8 +8,6 @@ pub enum Role {
     User,
     /// Message from the model
     Model,
-    /// System prompt
-    System,
     /// Function response
     Function,
 }
@@ -71,15 +69,12 @@ impl Content {
             role: None,
         }
     }
-    
+
     /// Create a new content with a function response from name and JSON value
-    pub fn function_response_json(
-        name: impl Into<String>, 
-        response: serde_json::Value
-    ) -> Self {
+    pub fn function_response_json(name: impl Into<String>, response: serde_json::Value) -> Self {
         Self {
-            parts: vec![Part::FunctionResponse { 
-                function_response: super::tools::FunctionResponse::new(name, response) 
+            parts: vec![Part::FunctionResponse {
+                function_response: super::tools::FunctionResponse::new(name, response),
             }],
             role: None,
         }
@@ -118,14 +113,6 @@ impl Message {
         }
     }
 
-    /// Create a new system message with text content
-    pub fn system(text: impl Into<String>) -> Self {
-        Self {
-            content: Content::text(text),
-            role: Role::System,
-        }
-    }
-
     /// Create a new function message with function response content from JSON
     pub fn function(name: impl Into<String>, response: serde_json::Value) -> Self {
         Self {
@@ -133,9 +120,12 @@ impl Message {
             role: Role::Function,
         }
     }
-    
+
     /// Create a new function message with function response from a JSON string
-    pub fn function_str(name: impl Into<String>, response: impl Into<String>) -> Result<Self, serde_json::Error> {
+    pub fn function_str(
+        name: impl Into<String>,
+        response: impl Into<String>,
+    ) -> Result<Self, serde_json::Error> {
         let response_str = response.into();
         let json = serde_json::from_str(&response_str)?;
         Ok(Self {
@@ -276,59 +266,62 @@ pub struct GenerateContentRequest {
     /// The tool config
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tool_config: Option<ToolConfig>,
+    /// The system instruction
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub system_instruction: Option<Content>,
 }
 
 /// Configuration for generation
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GenerationConfig {
     /// The temperature for the model (0.0 to 1.0)
-    /// 
-    /// Controls the randomness of the output. Higher values (e.g., 0.9) make output 
+    ///
+    /// Controls the randomness of the output. Higher values (e.g., 0.9) make output
     /// more random, lower values (e.g., 0.1) make output more deterministic.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
-    
+
     /// The top-p value for the model (0.0 to 1.0)
-    /// 
-    /// For each token generation step, the model considers the top_p percentage of 
-    /// probability mass for potential token choices. Lower values are more selective, 
+    ///
+    /// For each token generation step, the model considers the top_p percentage of
+    /// probability mass for potential token choices. Lower values are more selective,
     /// higher values allow more variety.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>,
-    
+
     /// The top-k value for the model
-    /// 
+    ///
     /// For each token generation step, the model considers the top_k most likely tokens.
     /// Lower values are more selective, higher values allow more variety.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_k: Option<i32>,
-    
+
     /// The maximum number of tokens to generate
-    /// 
+    ///
     /// Limits the length of the generated content. One token is roughly 4 characters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_output_tokens: Option<i32>,
-    
+
     /// The candidate count
-    /// 
+    ///
     /// Number of alternative responses to generate.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub candidate_count: Option<i32>,
-    
+
     /// Whether to stop on specific sequences
-    /// 
+    ///
     /// The model will stop generating content when it encounters any of these sequences.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stop_sequences: Option<Vec<String>>,
-    
+
     /// The response mime type
-    /// 
+    ///
     /// Specifies the format of the model's response.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub response_mime_type: Option<String>,
-    
+
     /// The response schema
-    /// 
+    ///
     /// Specifies the JSON schema for structured responses.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub response_schema: Option<serde_json::Value>,

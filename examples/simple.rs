@@ -1,14 +1,13 @@
 use gemini_rust::{
-    FunctionDeclaration, Gemini, PropertyDetails, FunctionParameters,
-    FunctionCallingMode, GenerationConfig
+    FunctionCallingMode, FunctionDeclaration, FunctionParameters, Gemini, GenerationConfig,
+    PropertyDetails,
 };
 use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get API key from environment variable
-    let api_key = env::var("GEMINI_API_KEY")
-        .expect("GEMINI_API_KEY environment variable not set");
+    let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY environment variable not set");
 
     // Create client
     let client = Gemini::new(api_key);
@@ -19,13 +18,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .generate_content()
         .with_system_prompt("You are a helpful assistant.")
         .with_user_message("Hello, can you tell me a joke about programming?")
-        .with_generation_config(
-            GenerationConfig {
-                temperature: Some(0.7),
-                max_output_tokens: Some(100),
-                ..Default::default()
-            }
-        )
+        .with_generation_config(GenerationConfig {
+            temperature: Some(0.7),
+            max_output_tokens: Some(100),
+            ..Default::default()
+        })
         .execute()
         .await?;
 
@@ -33,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Function calling example
     println!("\n--- Function calling example ---");
-    
+
     // Define a weather function
     let get_weather = FunctionDeclaration::new(
         "get_weather",
@@ -46,10 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             )
             .with_property(
                 "unit",
-                PropertyDetails::enum_type(
-                    "The unit of temperature", 
-                    ["celsius", "fahrenheit"]
-                ),
+                PropertyDetails::enum_type("The unit of temperature", ["celsius", "fahrenheit"]),
                 false,
             ),
     );
@@ -68,16 +62,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(function_call) = response.function_calls().first() {
         println!(
             "Function call: {} with args: {}",
-            function_call.name,
-            function_call.args
+            function_call.name, function_call.args
         );
 
         // Get parameters from the function call
         let location: String = function_call.get("location")?;
-        let unit = function_call.get::<String>("unit").unwrap_or_else(|_| String::from("celsius"));
-        
+        let unit = function_call
+            .get::<String>("unit")
+            .unwrap_or_else(|_| String::from("celsius"));
+
         println!("Location: {}, Unit: {}", location, unit);
-        
+
         // Simulate function execution
         let weather_response = format!(
             "{{\"temperature\": 22, \"unit\": \"{}\", \"condition\": \"sunny\"}}",
@@ -90,13 +85,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .with_system_prompt("You are a helpful weather assistant.")
             .with_user_message("What's the weather like in San Francisco right now?")
             .with_function_response_str("get_weather", weather_response)?
-            .with_generation_config(
-                GenerationConfig {
-                    temperature: Some(0.7),
-                    max_output_tokens: Some(100),
-                    ..Default::default()
-                }
-            )
+            .with_generation_config(GenerationConfig {
+                temperature: Some(0.7),
+                max_output_tokens: Some(100),
+                ..Default::default()
+            })
             .execute()
             .await?;
 

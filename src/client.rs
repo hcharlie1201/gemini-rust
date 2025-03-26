@@ -6,12 +6,12 @@ use crate::{
     tools::{FunctionDeclaration, Tool},
     Error, Result,
 };
+use futures::stream::Stream;
+use futures_util::StreamExt;
 use reqwest::Client;
+use std::pin::Pin;
 use std::sync::Arc;
 use url::Url;
-use futures_util::StreamExt;
-use futures::stream::Stream;
-use std::pin::Pin;
 
 const BASE_URL: &str = "https://generativelanguage.googleapis.com/v1beta/";
 const DEFAULT_MODEL: &str = "models/gemini-2.0-flash";
@@ -23,6 +23,7 @@ pub struct ContentBuilder {
     generation_config: Option<GenerationConfig>,
     tools: Option<Vec<Tool>>,
     tool_config: Option<ToolConfig>,
+    system_instruction: Option<Content>,
 }
 
 impl ContentBuilder {
@@ -34,13 +35,21 @@ impl ContentBuilder {
             generation_config: None,
             tools: None,
             tool_config: None,
+            system_instruction: None,
         }
     }
 
     /// Add a system prompt to the request
-    pub fn with_system_prompt(mut self, text: impl Into<String>) -> Self {
-        let content = Content::text(text).with_role(Role::System);
-        self.contents.push(content);
+    pub fn with_system_prompt(self, text: impl Into<String>) -> Self {
+        // Create a Content with text parts specifically for system_instruction field
+        self.with_system_instruction(text)
+    }
+
+    /// Set the system instruction directly (matching the API format in the curl example)
+    pub fn with_system_instruction(mut self, text: impl Into<String>) -> Self {
+        // Create a Content with text parts specifically for system_instruction field
+        let content = Content::text(text);
+        self.system_instruction = Some(content);
         self
     }
 
@@ -64,12 +73,11 @@ impl ContentBuilder {
         name: impl Into<String>,
         response: serde_json::Value,
     ) -> Self {
-        let content = Content::function_response_json(name, response)
-            .with_role(Role::Function);
+        let content = Content::function_response_json(name, response).with_role(Role::Function);
         self.contents.push(content);
         self
     }
-    
+
     /// Add a function response to the request using a JSON string
     pub fn with_function_response_str(
         mut self,
@@ -78,8 +86,7 @@ impl ContentBuilder {
     ) -> std::result::Result<Self, serde_json::Error> {
         let response_str = response.into();
         let json = serde_json::from_str(&response_str)?;
-        let content = Content::function_response_json(name, json)
-            .with_role(Role::Function);
+        let content = Content::function_response_json(name, json).with_role(Role::Function);
         self.contents.push(content);
         Ok(self)
     }
@@ -112,7 +119,7 @@ impl ContentBuilder {
         self.generation_config = Some(config);
         self
     }
-    
+
     /// Set the temperature for the request
     pub fn with_temperature(mut self, temperature: f32) -> Self {
         if self.generation_config.is_none() {
@@ -123,7 +130,7 @@ impl ContentBuilder {
         }
         self
     }
-    
+
     /// Set the top-p value for the request
     pub fn with_top_p(mut self, top_p: f32) -> Self {
         if self.generation_config.is_none() {
@@ -134,7 +141,7 @@ impl ContentBuilder {
         }
         self
     }
-    
+
     /// Set the top-k value for the request
     pub fn with_top_k(mut self, top_k: i32) -> Self {
         if self.generation_config.is_none() {
@@ -145,7 +152,7 @@ impl ContentBuilder {
         }
         self
     }
-    
+
     /// Set the maximum output tokens for the request
     pub fn with_max_output_tokens(mut self, max_output_tokens: i32) -> Self {
         if self.generation_config.is_none() {
@@ -156,7 +163,7 @@ impl ContentBuilder {
         }
         self
     }
-    
+
     /// Set the candidate count for the request
     pub fn with_candidate_count(mut self, candidate_count: i32) -> Self {
         if self.generation_config.is_none() {
@@ -167,7 +174,7 @@ impl ContentBuilder {
         }
         self
     }
-    
+
     /// Set the stop sequences for the request
     pub fn with_stop_sequences(mut self, stop_sequences: Vec<String>) -> Self {
         if self.generation_config.is_none() {
@@ -178,7 +185,7 @@ impl ContentBuilder {
         }
         self
     }
-    
+
     /// Set the response mime type for the request
     pub fn with_response_mime_type(mut self, mime_type: impl Into<String>) -> Self {
         if self.generation_config.is_none() {
@@ -189,7 +196,7 @@ impl ContentBuilder {
         }
         self
     }
-    
+
     /// Set the response schema for structured output
     pub fn with_response_schema(mut self, schema: serde_json::Value) -> Self {
         if self.generation_config.is_none() {
@@ -239,6 +246,7 @@ impl ContentBuilder {
             safety_settings: None,
             tools: self.tools,
             tool_config: self.tool_config,
+            system_instruction: self.system_instruction,
         };
 
         self.client.generate_content_raw(request).await
@@ -254,6 +262,7 @@ impl ContentBuilder {
             safety_settings: None,
             tools: self.tools,
             tool_config: self.tool_config,
+            system_instruction: self.system_instruction,
         };
 
         self.client.generate_content_stream(request).await
@@ -284,12 +293,7 @@ impl GeminiClient {
     ) -> Result<GenerationResponse> {
         let url = self.build_url("generateContent")?;
 
-        let response = self
-            .http_client
-            .post(url)
-            .json(&request)
-            .send()
-            .await?;
+        let response = self.http_client.post(url).json(&request).send().await?;
 
         let status = response.status();
         if !status.is_success() {
@@ -311,12 +315,7 @@ impl GeminiClient {
     ) -> Result<Pin<Box<dyn Stream<Item = Result<GenerationResponse>> + Send>>> {
         let url = self.build_url("streamGenerateContent")?;
 
-        let response = self
-            .http_client
-            .post(url)
-            .json(&request)
-            .send()
-            .await?;
+        let response = self.http_client.post(url).json(&request).send().await?;
 
         let status = response.status();
         if !status.is_success() {
@@ -380,10 +379,10 @@ impl Gemini {
     pub fn new(api_key: impl Into<String>) -> Self {
         Self::with_model(api_key, DEFAULT_MODEL.to_string())
     }
-    
+
     /// Create a new client for the Gemini Pro model
     pub fn pro(api_key: impl Into<String>) -> Self {
-        Self::with_model(api_key, "models/gemini-2.0-pro".to_string())
+        Self::with_model(api_key, "models/gemini-2.0-pro-exp-02-05".to_string())
     }
 
     /// Create a new client with the specified API key and model

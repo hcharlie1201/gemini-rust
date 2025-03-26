@@ -5,15 +5,14 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get API key from environment variable
-    let api_key = env::var("GEMINI_API_KEY")
-        .expect("GEMINI_API_KEY environment variable not set");
+    let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY environment variable not set");
 
     // Create client
     let client = Gemini::new(api_key);
 
     // Simple streaming generation
     println!("--- Streaming generation ---");
-    
+
     let mut stream = client
         .generate_content()
         .with_system_prompt("You are a helpful, creative assistant.")
@@ -35,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Multi-turn conversation
     println!("--- Multi-turn conversation ---");
-    
+
     // First turn
     let response1 = client
         .generate_content()

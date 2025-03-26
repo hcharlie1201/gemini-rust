@@ -4,14 +4,13 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get API key from environment variable
-    let api_key = env::var("GOOGLE_API_KEY")
-        .expect("GOOGLE_API_KEY environment variable not set");
+    let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY environment variable not set");
 
     // Create client
     let client = Gemini::new(api_key);
 
     println!("--- Google Search tool example ---");
-    
+
     // Create a Google Search tool
     let google_search_tool = Tool::google_search();
 

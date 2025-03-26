@@ -35,7 +35,7 @@ impl Tool {
             function_declarations,
         }
     }
-    
+
     /// Create a new Google Search tool
     pub fn google_search() -> Self {
         Self::GoogleSearch {
@@ -218,13 +218,22 @@ impl FunctionCall {
         match &self.args {
             serde_json::Value::Object(obj) => {
                 if let Some(value) = obj.get(key) {
-                    serde_json::from_value(value.clone())
-                        .map_err(|e| crate::Error::FunctionCallError(format!("Error deserializing parameter {}: {}", key, e)))
+                    serde_json::from_value(value.clone()).map_err(|e| {
+                        crate::Error::FunctionCallError(format!(
+                            "Error deserializing parameter {}: {}",
+                            key, e
+                        ))
+                    })
                 } else {
-                    Err(crate::Error::FunctionCallError(format!("Missing parameter: {}", key)))
+                    Err(crate::Error::FunctionCallError(format!(
+                        "Missing parameter: {}",
+                        key
+                    )))
                 }
             }
-            _ => Err(crate::Error::FunctionCallError("Arguments are not an object".to_string())),
+            _ => Err(crate::Error::FunctionCallError(
+                "Arguments are not an object".to_string(),
+            )),
         }
     }
 }
@@ -248,9 +257,12 @@ impl FunctionResponse {
             response: Some(response),
         }
     }
-    
+
     /// Create a new function response with a string that will be parsed as JSON
-    pub fn from_str(name: impl Into<String>, response: impl Into<String>) -> Result<Self, serde_json::Error> {
+    pub fn from_str(
+        name: impl Into<String>,
+        response: impl Into<String>,
+    ) -> Result<Self, serde_json::Error> {
         let json = serde_json::from_str(&response.into())?;
         Ok(Self {
             name: name.into(),
