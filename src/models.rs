@@ -393,6 +393,7 @@ pub enum HarmCategory {
 }
 
 /// Threshold for blocking harmful content
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum HarmBlockThreshold {
