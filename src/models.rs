@@ -8,8 +8,6 @@ pub enum Role {
     User,
     /// Message from the model
     Model,
-    /// Function response
-    Function,
 }
 
 /// Content part that can be included in a message
@@ -117,7 +115,7 @@ impl Message {
     pub fn function(name: impl Into<String>, response: serde_json::Value) -> Self {
         Self {
             content: Content::function_response_json(name, response),
-            role: Role::Function,
+            role: Role::Model,
         }
     }
 
@@ -130,7 +128,7 @@ impl Message {
         let json = serde_json::from_str(&response_str)?;
         Ok(Self {
             content: Content::function_response_json(name, json),
-            role: Role::Function,
+            role: Role::Model,
         })
     }
 }

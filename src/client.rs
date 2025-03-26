@@ -73,7 +73,7 @@ impl ContentBuilder {
         name: impl Into<String>,
         response: serde_json::Value,
     ) -> Self {
-        let content = Content::function_response_json(name, response).with_role(Role::Function);
+        let content = Content::function_response_json(name, response).with_role(Role::User);
         self.contents.push(content);
         self
     }
@@ -86,7 +86,7 @@ impl ContentBuilder {
     ) -> std::result::Result<Self, serde_json::Error> {
         let response_str = response.into();
         let json = serde_json::from_str(&response_str)?;
-        let content = Content::function_response_json(name, json).with_role(Role::Function);
+        let content = Content::function_response_json(name, json).with_role(Role::User);
         self.contents.push(content);
         Ok(self)
     }

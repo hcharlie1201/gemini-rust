@@ -1,7 +1,8 @@
 use gemini_rust::{
-    FunctionCallingMode, FunctionDeclaration, FunctionParameters, Gemini, GenerationConfig,
-    PropertyDetails,
+    Content, FunctionCall, FunctionCallingMode, FunctionDeclaration, FunctionParameters, Gemini,
+    GenerationConfig, Message, PropertyDetails, Role,
 };
+use serde_json::json;
 use std::env;
 
 #[tokio::main]
@@ -73,6 +74,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         println!("Location: {}, Unit: {}", location, unit);
 
+        let model_function_call = FunctionCall::new(
+            "get_weather",
+            json!({
+                "location": location,
+                "unit": unit
+            }),
+        );
+
+        // Create model content with function call
+        let model_content = Content::function_call(model_function_call).with_role(Role::Model);
+
+        // Add as model message
+        let model_message = Message {
+            content: model_content,
+            role: Role::Model,
+        };
+
         // Simulate function execution
         let weather_response = format!(
             "{{\"temperature\": 22, \"unit\": \"{}\", \"condition\": \"sunny\"}}",
@@ -84,6 +102,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .generate_content()
             .with_system_prompt("You are a helpful weather assistant.")
             .with_user_message("What's the weather like in San Francisco right now?")
+            .with_message(model_message)
             .with_function_response_str("get_weather", weather_response)?
             .with_generation_config(GenerationConfig {
                 temperature: Some(0.7),
