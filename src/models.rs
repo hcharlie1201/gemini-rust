@@ -98,7 +98,7 @@ impl Message {
     /// Create a new user message with text content
     pub fn user(text: impl Into<String>) -> Self {
         Self {
-            content: Content::text(text),
+            content: Content::text(text).with_role(Role::User),
             role: Role::User,
         }
     }
@@ -106,7 +106,7 @@ impl Message {
     /// Create a new model message with text content
     pub fn model(text: impl Into<String>) -> Self {
         Self {
-            content: Content::text(text),
+            content: Content::text(text).with_role(Role::Model),
             role: Role::Model,
         }
     }
@@ -114,7 +114,7 @@ impl Message {
     /// Create a new function message with function response content from JSON
     pub fn function(name: impl Into<String>, response: serde_json::Value) -> Self {
         Self {
-            content: Content::function_response_json(name, response),
+            content: Content::function_response_json(name, response).with_role(Role::Model),
             role: Role::Model,
         }
     }
@@ -127,7 +127,7 @@ impl Message {
         let response_str = response.into();
         let json = serde_json::from_str(&response_str)?;
         Ok(Self {
-            content: Content::function_response_json(name, json),
+            content: Content::function_response_json(name, json).with_role(Role::Model),
             role: Role::Model,
         })
     }

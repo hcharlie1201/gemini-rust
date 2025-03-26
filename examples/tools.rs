@@ -1,5 +1,5 @@
 use gemini_rust::{
-    Content, FunctionCall, FunctionCallingMode, FunctionDeclaration, FunctionParameters, Gemini,
+    Content, FunctionCallingMode, FunctionDeclaration, FunctionParameters, Gemini,
     Message, PropertyDetails, Role, Tool,
 };
 use serde_json::json;
@@ -107,8 +107,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .with_user_message("What's 42 times 12?");
 
                 // 2. Create model content with function call
-                let model_content =
-                    Content::function_call((*function_call).clone());
+                let model_content = Content::function_call((*function_call).clone());
 
                 // Add as model message
                 let model_message = Message {
@@ -155,8 +154,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .with_user_message("What's 42 times 12?");
 
                 // 2. Create model content with function call
-                let model_content =
-                    Content::function_call((*function_call).clone());
+                let model_content = Content::function_call((*function_call).clone());
 
                 // Add as model message
                 let model_message = Message {

@@ -1,8 +1,7 @@
 use gemini_rust::{
-    Content, FunctionCall, FunctionCallingMode, FunctionDeclaration, FunctionParameters, Gemini,
+    Content, FunctionCallingMode, FunctionDeclaration, FunctionParameters, Gemini,
     GenerationConfig, Message, PropertyDetails, Role,
 };
-use serde_json::json;
 use std::env;
 
 #[tokio::main]

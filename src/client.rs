@@ -55,14 +55,16 @@ impl ContentBuilder {
 
     /// Add a user message to the request
     pub fn with_user_message(mut self, text: impl Into<String>) -> Self {
-        let content = Content::text(text).with_role(Role::User);
+        let message = Message::user(text);
+        let content = message.content;
         self.contents.push(content);
         self
     }
 
     /// Add a model message to the request
     pub fn with_model_message(mut self, text: impl Into<String>) -> Self {
-        let content = Content::text(text).with_role(Role::Model);
+        let message = Message::model(text);
+        let content = message.content;
         self.contents.push(content);
         self
     }

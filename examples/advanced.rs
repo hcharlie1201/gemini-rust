@@ -1,6 +1,6 @@
 use gemini_rust::{
     Content, FunctionCallingMode, FunctionDeclaration, FunctionParameters, Gemini, Part,
-    PropertyDetails, Role,
+    PropertyDetails,
 };
 use serde_json;
 use std::env;
@@ -77,7 +77,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         call_content.parts.push(Part::FunctionCall {
             function_call: (*function_call).clone(),
         });
-        let call_content = call_content.with_role(Role::Model);
         final_request.contents.push(call_content);
 
         // Now add the function response using the JSON value
