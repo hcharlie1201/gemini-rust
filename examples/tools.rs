@@ -106,19 +106,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .with_system_prompt("You are a helpful assistant that can check weather and perform calculations.")
                     .with_user_message("What's 42 times 12?");
 
-                // 2. Create model message with function call
-                let model_function_call = FunctionCall::new(
-                    "calculate",
-                    json!({
-                        "operation": operation,
-                        "a": a,
-                        "b": b
-                    }),
-                );
-
-                // Create model content with function call
+                // 2. Create model content with function call
                 let model_content =
-                    Content::function_call(model_function_call).with_role(Role::Model);
+                    Content::function_call((*function_call).clone());
 
                 // Add as model message
                 let model_message = Message {
@@ -164,18 +154,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .with_system_prompt("You are a helpful assistant that can check weather and perform calculations.")
                     .with_user_message("What's 42 times 12?");
 
-                // 2. Create model message with function call
-                let model_function_call = FunctionCall::new(
-                    "get_weather",
-                    json!({
-                        "location": location,
-                        "unit": unit
-                    }),
-                );
-
-                // Create model content with function call
+                // 2. Create model content with function call
                 let model_content =
-                    Content::function_call(model_function_call).with_role(Role::Model);
+                    Content::function_call((*function_call).clone());
 
                 // Add as model message
                 let model_message = Message {

@@ -74,16 +74,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         println!("Location: {}, Unit: {}", location, unit);
 
-        let model_function_call = FunctionCall::new(
-            "get_weather",
-            json!({
-                "location": location,
-                "unit": unit
-            }),
-        );
-
         // Create model content with function call
-        let model_content = Content::function_call(model_function_call).with_role(Role::Model);
+        let model_content = Content::function_call((*function_call).clone());
 
         // Add as model message
         let model_message = Message {
