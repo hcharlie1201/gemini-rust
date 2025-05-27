@@ -10,8 +10,9 @@ mod tools;
 pub use client::Gemini;
 pub use error::Error;
 pub use models::{
-    Candidate, CitationMetadata, Content, FunctionCallingMode, GenerationConfig,
-    GenerationResponse, ImageSource, Message, Part, Role, SafetyRating,
+    Candidate, CitationMetadata, Content, FunctionCallingMode, GenerateContentRequest,
+    GenerationConfig, GenerationResponse, ImageMediaType, ImageSource, Message, Part, Role,
+    SafetyRating,
 };
 pub use tools::{FunctionCall, FunctionDeclaration, FunctionParameters, PropertyDetails, Tool};
 
