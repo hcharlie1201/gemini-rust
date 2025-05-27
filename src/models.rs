@@ -10,14 +10,57 @@ pub enum Role {
     Model,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[serde(tag = "type")]
+pub enum ImageSource {
+    #[serde(rename = "base64")]
+    Base64 {
+        /// Media type of the image
+        media_type: ImageMediaType,
+        /// Base64-encoded image data
+        data: String,
+    },
+    /// URL to an image
+    #[serde(rename = "url")]
+    Url {
+        /// URL of the image
+        url: String,
+    },
+}
+
+/// Media type of an image
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ImageMediaType {
+    /// JPEG image
+    #[serde(rename = "image/jpeg")]
+    Jpeg,
+    /// PNG image
+    #[serde(rename = "image/png")]
+    Png,
+    /// GIF image
+    #[serde(rename = "image/gif")]
+    Gif,
+    /// WebP image
+    #[serde(rename = "image/webp")]
+    WebP,
+}
+
 /// Content part that can be included in a message
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Part {
     /// Text content
+    #[serde(rename = "text")]
     Text {
         /// The text content
         text: String,
+    },
+    /// Image content
+    #[serde(rename = "image")]
+    Image {
+        #[serde(rename = "source")]
+        source: ImageSource,
     },
     /// Function call from the model
     FunctionCall {
@@ -35,6 +78,7 @@ pub enum Part {
 
 /// Content of a message
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub struct Content {
     /// Parts of the content
     pub parts: Vec<Part>,
@@ -48,6 +92,34 @@ impl Content {
     pub fn text(text: impl Into<String>) -> Self {
         Self {
             parts: vec![Part::Text { text: text.into() }],
+            role: None,
+        }
+    }
+
+    /// Create a new image block
+    pub fn image(media_type: impl Into<String>, data: impl Into<String>) -> Self {
+        Self {
+            parts: vec![Part::Image {
+                source: ImageSource::Base64 {
+                    media_type: match media_type.into().as_str() {
+                        "image/jpeg" => ImageMediaType::Jpeg,
+                        "image/png" => ImageMediaType::Png,
+                        "image/gif" => ImageMediaType::Gif,
+                        "image/webp" => ImageMediaType::WebP,
+                        _ => panic!("Unsupported media type"),
+                    },
+                    data: data.into(),
+                },
+            }],
+            role: None,
+        }
+    }
+
+    pub fn image_url(url: impl Into<String>) -> Self {
+        Self {
+            parts: vec![Part::Image {
+                source: ImageSource::Url { url: url.into() },
+            }],
             role: None,
         }
     }
