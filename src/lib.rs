@@ -14,7 +14,10 @@ pub use models::{
     GenerationConfig, GenerationResponse, ImageMediaType, ImageSource, Message, Part, Role,
     SafetyRating,
 };
-pub use tools::{FunctionCall, FunctionDeclaration, FunctionParameters, PropertyDetails, Tool};
+pub use tools::{
+    value_to_function_parameters, FunctionCall, FunctionDeclaration, FunctionParameters,
+    PropertyDetails, Tool,
+};
 
 /// Result type for this crate
 pub type Result<T> = std::result::Result<T, Error>;

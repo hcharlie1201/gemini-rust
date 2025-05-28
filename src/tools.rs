@@ -70,6 +70,87 @@ impl FunctionDeclaration {
     }
 }
 
+pub fn value_to_function_parameters(value: serde_json::Value) -> FunctionParameters {
+    let mut properties = HashMap::new();
+    let mut required = Vec::new();
+
+    if let serde_json::Value::Object(obj) = value {
+        // Extract type and required fields if they exist
+        let param_type = obj
+            .get("type")
+            .and_then(|t| t.as_str())
+            .unwrap_or("object")
+            .to_uppercase();
+
+        if let Some(req) = obj.get("required") {
+            if let Some(req_array) = req.as_array() {
+                required = req_array
+                    .iter()
+                    .filter_map(|v| v.as_str().map(String::from))
+                    .collect();
+            }
+        }
+
+        // Process properties if they exist
+        if let Some(props) = obj.get("properties") {
+            if let Some(props_obj) = props.as_object() {
+                for (key, value) in props_obj {
+                    if let Some(prop_details) = extract_property_details(value) {
+                        properties.insert(key.clone(), prop_details);
+                    }
+                }
+            }
+        }
+
+        FunctionParameters {
+            param_type,
+            properties: Some(properties),
+            required: Some(required),
+        }
+    } else {
+        // Default to object type if not an object
+        FunctionParameters {
+            param_type: "OBJECT".to_string(),
+            properties: Some(properties),
+            required: Some(required),
+        }
+    }
+}
+
+fn extract_property_details(value: &serde_json::Value) -> Option<PropertyDetails> {
+    let obj = value.as_object()?;
+
+    let property_type = obj
+        .get("type")
+        .and_then(|t| t.as_str())
+        .unwrap_or("string")
+        .to_uppercase();
+
+    let description = obj
+        .get("description")
+        .and_then(|d| d.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let enum_values = obj.get("enum").and_then(|e| e.as_array()).map(|arr| {
+        arr.iter()
+            .filter_map(|v| v.as_str().map(String::from))
+            .collect()
+    });
+
+    let items = obj
+        .get("items")
+        .and_then(|i| extract_property_details(i))
+        .map(Box::new);
+
+    Some(PropertyDetails {
+        property_type,
+        description,
+        enum_values,
+        items,
+    })
+}
+
 /// Parameters for a function
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FunctionParameters {

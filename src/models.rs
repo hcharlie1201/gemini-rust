@@ -16,6 +16,7 @@ pub enum ImageSource {
     #[serde(rename = "base64")]
     Base64 {
         /// Media type of the image
+        #[serde(rename = "mimeType")]
         media_type: ImageMediaType,
         /// Base64-encoded image data
         data: String,
@@ -57,7 +58,7 @@ pub enum Part {
         text: String,
     },
     /// Image content
-    #[serde(rename = "image")]
+    #[serde(rename = "inlineData")]
     Image {
         #[serde(rename = "source")]
         source: ImageSource,
